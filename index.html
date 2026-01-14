@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hitster Debugger</title>
+    <style>
+        body { background-color: #121212; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .card { background: #1db954; padding: 30px; border-radius: 20px; text-align: center; cursor: pointer; width: 280px; transition: 0.2s; }
+        .card:active { transform: scale(0.98); }
+        
+        /* Debugger Konsole am unteren Rand */
+        #debug-console {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 150px;
+            background: rgba(0,0,0,0.9); border-top: 2px solid #444;
+            font-family: monospace; font-size: 12px; padding: 10px;
+            overflow-y: auto; color: #00ff00; box-sizing: border-box;
+        }
+        .debug-entry { margin-bottom: 4px; border-bottom: 1px solid #222; }
+        .error { color: #ff4444; }
+
+        .hidden-player { position: absolute; left: -9999px; opacity: 0.01; }
+        #solution-box { display: none; margin-top: 20px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div id="start-btn" class="card" onclick="startQuiz()">
+        <h1>🎵 SONG TESTEN</h1>
+        <p>Klick für Audio</p>
+    </div>
+
+    <div id="solution-box">
+        <p>Lösung wird abgespielt...</p>
+        <button onclick="location.reload()">Reset</button>
+    </div>
+
+    <div id="player-container" class="hidden-player"></div>
+
+    <div id="debug-console">
+        <div class="debug-entry">> Debugger bereit. Warte auf Klick...</div>
+    </div>
+
+<script>
+    function log(msg, isError = false) {
+        const consoleEl = document.getElementById('debug-console');
+        const entry = document.createElement('div');
+        entry.className = 'debug-entry' + (isError ? ' error' : '');
+        entry.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        consoleEl.prepend(entry);
+    }
+
+    function startQuiz() {
+        log("Button geklickt. Initialisiere Player...");
+        
+        const trackId = "6erBowZaW6Ur3vNOWhS2zM";
+        const playerContainer = document.getElementById('player-container');
+        
+        // UI Update
+        document.getElementById('start-btn').style.display = 'none';
+        document.getElementById('solution-box').style.display = 'block';
+
+        // IFrame Erstellung
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://open.spotify.com/embed/track/${trackId}?utm_source=generator&autoplay=1`;
+        iframe.width = "300";
+        iframe.height = "80";
+        iframe.frameBorder = "0";
+        iframe.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
+        
+        // Überprüfen ob IFrame lädt
+        iframe.onload = () => log("✅ Spotify IFrame erfolgreich geladen.");
+        iframe.onerror = () => log("❌ Fehler beim Laden des IFrames!", true);
+
+        playerContainer.appendChild(iframe);
+
+        log("IFrame zum DOM hinzugefügt. Autoplay-Befehl gesendet.");
+        
+        // Check für Mobile Stummschaltung
+        if (window.navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
+            log("⚠️ iOS erkannt: Stelle sicher, dass der Seitenschalter NICHT auf stumm steht!");
+        }
+    }
+
+    // Fehler-Catching für generelle Script-Fehler
+    window.onerror = function(msg, url, line) {
+        log(`Globaler Fehler: ${msg} in Zeile ${line}`, true);
+    };
+</script>
+
+</body>
+</html>
